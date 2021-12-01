@@ -25,14 +25,22 @@ static void init_parsing(void) {
   args_indx = 0;
 }
 
-static void cmd_append(cmd_t *cmd, char c, int *indx) {
-  cmd->cmd[*indx] = c;
-  *indx += 1;
+static bool cmd_append(cmd_t *cmd, char c, int *indx) {
+  if (*indx <= MAX_CMD_LEN - 1) {
+    cmd->cmd[*indx] = c;
+    *indx += 1;
+    return true;
+  }
+  return false;
 }
 
-static void args_append(cmd_t *cmd, char c, int *indx) {
-  cmd->args[*indx] = c;
-  *indx += 1;
+static bool args_append(cmd_t *cmd, char c, int *indx) {
+  if (*indx <= MAX_ARG_LEN - 1) {
+    cmd->args[*indx] = c;
+    *indx += 1;
+    return true;
+  }
+  return false;
 }
 
 
@@ -55,12 +63,17 @@ static void parse_automata(parse_e_t event, cmd_t *cmd) {
   }
   case CMD: {
     if (event == ch) {
-      cmd_append(cmd, c_read, &cmd_indx);
+      if (!cmd_append(cmd, c_read, &cmd_indx)) {
+	parsing = false;
+	cmd_type = exceeded;
+	state = INIT;
+      }
     } else if (event == nl) {
       parsing = false;
-      cmd_append(cmd, '\0', &cmd_indx);
-      cmd_type = valid;
+      cmd_type = cmd_append(cmd, '\0', &cmd_indx) ? valid : exceeded;
       state = INIT;
+      // cmd_append(cmd, '\0', &cmd_indx);
+      // cmd_type = valid;
     } else if (event == bg) {
       state = BG;
     } else if (event == sp) {
@@ -73,12 +86,18 @@ static void parse_automata(parse_e_t event, cmd_t *cmd) {
       args_append(cmd, c_read, &args_indx);
     } else if (event == nl) {
       parsing = false;
-      args_append(cmd, '\0', &args_indx);
-      cmd_type = valid;
+      // args_append(cmd, '\0', &args_indx);
+      cmd_type = args_append(cmd, '\0', &args_indx) ? valid : exceeded;
+      // cmd_type = valid;
       state = INIT;
     } else if (event == bg) {
-      args_append(cmd, '\0', &args_indx);
+      if (!args_append(cmd, '\0', &args_indx)) {
+	parsing = false;
+	cmd_type = exceeded;
+	state = INIT;
+      } else {
       state = BG;
+      }
     }
     break;
   }

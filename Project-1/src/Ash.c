@@ -30,6 +30,10 @@ static cmd_t init_cmd(void) {
 }
 
 
+
+
+
+
 /* Main Ash shell */
 int main(void) {
 
@@ -37,11 +41,35 @@ int main(void) {
   char *read_in = NULL;
   size_t len = 0;
   ssize_t nread;
+
+  char line[MAX_LINE + 1];
   
   while (SHOULD_RUN){ 
     fprintf(stdout, "%s\n", getenv("PWD")); /* Supossing "PWD" is available */
  
-    nread = getline(&read_in, &len, stdin);
+    // nread = getline(&read_in, &len, stdin);
+
+    char c_read;
+    while (((c_read = fgetc(stdin)) != EOF) && (c_read != '\n')) {
+      /* if (c_read == ' ') { */
+      /* 	parse_automata(sp); */
+      /* } else if (c_read == '\n') { */
+      /* 	parse_automata(nl); */
+      /* } else if (c_read == '&') { */
+      /* 	parse_automata(bg); */
+      /* } else { */
+      /* 	parse_automata(ch); */
+      /* } */
+    }
+
+    if (feof(stdin)) {
+      printf("%s\n", "eERROR");
+      clearerr(stdin);
+    } else {
+      printf("%s\n", "NO ERROR");
+    }
+
+    
     if (nread == -1) {
       perror("-Ash: Error: Some error ocurred");
       return(-1);
@@ -52,7 +80,7 @@ int main(void) {
     }
     else {
       // read_in[nread] = '\n';
-      printf("<%s>", read_in);
+      // printf("<%s>", read_in);
       
       switch (parse(read_in, &cmd)) {
       case none: {
@@ -65,6 +93,10 @@ int main(void) {
       }
       case invalid: {
 	printf("\n%s\n", "> INVALID");
+	break;
+      }
+      case exceeded: {
+	printf("\n%s\n", "> Exceeded");
 	break;
       }
       default:
