@@ -24,21 +24,21 @@
 /* REVISED */
 #include <dirent.h>
 static int8_t ic(void) { /* Print directory (ls) */
-    DIR *DIR_fd;
-    struct dirent *DIR_entry;
+  DIR *DIR_fd;
+  struct dirent *DIR_entry;
     
-    DIR_fd = opendir(".");
-    if (DIR_fd == NULL) {
-        perror("-ANASSsh: ic");
-        return -1; // Failed
-    } 
-    else {
-        while ((DIR_entry = readdir(DIR_fd)) != NULL) {
-            fprintf(stdout, "%s\n", DIR_entry->d_name);
-        }   
-        closedir(DIR_fd);
-        return 0; // Succeeded
-    }
+  DIR_fd = opendir(".");
+  if (DIR_fd == NULL) {
+    perror("-ANASSsh: ic");
+    return -1; // Failed
+  } 
+  else {
+    while ((DIR_entry = readdir(DIR_fd)) != NULL) {
+      fprintf(stdout, "%s\n", DIR_entry->d_name);
+    }   
+    closedir(DIR_fd);
+    return 0; // Succeeded
+  }
 }
 
 
@@ -84,14 +84,18 @@ static int cm(const char *const cm_args) {
   if (argc < 2) {
     perror("-Ash: cm, too few arguments given");
     return -1;
-  } else if (argc > 2) {
+  } else if (argc > 2 && token) {
     perror("-Ash: cm, too much arguments given");
     return -1;
   } else {
     
     mode = strsep(&mode, " \n");
     cm_mode = strtol(mode, 0, 8);
-  
+
+    printf("path: '%s'\n", path);
+    printf("mode: '%s'\n", mode);
+    printf("Mode -> %d\n", cm_mode);
+    
     if (cm_mode < 0) {
       perror("-Ash: cm, negative mode");
       return -1;
@@ -113,28 +117,65 @@ static int cm(const char *const cm_args) {
 #include <fcntl.h>
 #include <pwd.h>
 #include <errno.h>
-static int co(const char *path, const char *owner) {
-  uid_t uid;
-  struct passwd *pwd;
-  char *endptr;
+static int co(const char *const co_args) {
+  //const char *path, const char *owner) {
 
-  uid = strtol(owner, &endptr, 10);
+  char *args = (char *)co_args;
+  char *path;
+  char *owner;  
+  char *token;
+  int argc = 0;
   
-  if (*endptr != '\0') {       /* Was not pure numeric string */
-    pwd = getpwnam(owner);     /* Try getting UID for username */
-    if (pwd == NULL) {
-      perror("-Ash: chown, username not found"); // UID for username not found");
-      return -1;
+  token = strtok(args, " ");
+  while( token != NULL ) {
+    if (argc == 0) {
+      path = token;
+    } else if (argc == 1) {
+      owner = token;
+    } else {
+      break;
+    }
+    argc++;
+    token = strtok(NULL, " ");
+  }
+
+  printf("%d\n", argc);
+  
+  if (argc < 2) {
+    perror("-Ash: cm, too few arguments given");
+    return -1;
+  } else if (argc == 2 && token) {
+    perror("-Ash: cm, too much arguments given");
+    return -1;
+  } else {
+
+    owner = strsep(&owner, " \n");
+
+    printf("path: '%s'\n", path);
+    printf("owner: '%s'\n", owner);
+
+    
+    uid_t uid;
+    struct passwd *pwd;
+    char *endptr;
+  
+    uid = strtol(owner, &endptr, 10);
+  
+    if (*endptr != '\0') {       /* Was not pure numeric string */
+      pwd = getpwnam(owner);     /* Try getting UID for username */
+      if (pwd == NULL) {
+	perror("-Ash: chown, username not found"); // UID for username not found");
+	return -1;
+      }
+
+      uid = pwd->pw_uid;
     }
 
-    uid = pwd->pw_uid;
+    if (chown(path, uid, -1) == -1) {
+      perror("-Ash: chown");
+      return -1;
+    }
   }
-
-  if (chown(path, uid, -1) == -1) {
-    perror("-Ash: chown");
-    return -1;
-  }
-  
   return 0;
 }
 
@@ -200,7 +241,7 @@ int main(void) {
       cmd = strsep(&tmp_read_in, " ");
       cmd = strtok(cmd, "\n");
       args = tmp_read_in; /* tmp_read_in will only contain the args
-			      part */
+			     part */
 
       // printf("cmd: '%s'\n", cmd);
       // printf("args: '%s'\n", args);
@@ -218,7 +259,7 @@ int main(void) {
 	} else if (strcmp(cmd, "cm") == 0) {
 	  cm(args);
 	} else if (strcmp(cmd, "co") == 0) {
-	  // co(args);
+	  co(args);
 	} else if (strcmp(cmd, "surt") == 0) {
 	  surt();
 	} else { /* External command or */
