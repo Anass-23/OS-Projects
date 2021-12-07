@@ -8,6 +8,6 @@
 
 #include "defs.h"
 
-cmd_type_t parse(const char *const read_in, cmd_t *const cmd);
+void parse(const char *const read_in, cmd_t *const cmd);
 
 #endif /* _PARSER_H_ */
