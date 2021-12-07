@@ -20,6 +20,8 @@
 #define SHOULD_RUN      1
 
 ////////////////////////////////////////
+
+/* REVISED */
 #include <dirent.h>
 static int8_t ic(void) { /* Print directory (ls) */
     DIR *DIR_fd;
@@ -42,52 +44,71 @@ static int8_t ic(void) { /* Print directory (ls) */
 
 
 
-
+/* REVISED */
 static int cd(char *path) {
-  if (strlen(path) == 0) { // to home directory
-    if (chdir(getenv("HOME")) == -1) {
-      perror("-Ash: cd");
-      return -1; // Failed
-    }
-  } else {
-    if (chdir(path) == -1) {
-      perror("-Ash: cd");
-      return -1; // Failed
-    }
+  
+  path = path ? strtok(path, " \n") : getenv("HOME");
+  
+  if (chdir(path) == -1) {
+    perror("-Ash: cd");
+    return -1;
   }
-  return 0; // Succeeded
+  
+  return 0;
 }
 
 
 
-
+/* REVISED */
 #include <sys/stat.h>
-static int cm(const char *path, const char *mode) {
-
-  int cm_mode = strtol(mode, 0, 8);
-
-  printf("Mode -> %d\n", cm_mode);
+static int cm(const char *const cm_args) {
+  char *args = (char *)cm_args;
+  char *path = NULL;
+  char *mode = NULL;
+  char *token;
+  int cm_mode, argc = 0;
   
-  if (cm_mode < 0 || cm_mode == LONG_MIN || cm_mode == LONG_MAX) {
-    perror("-Ash: cm mode incorrect");
-    return -1;
+  token = strtok(args, " ");
+  while( token != NULL ) {
+    if (argc == 0) {
+      path = token;
+    } else if (argc == 1) {
+      mode = token;
+    } else {
+      break;
+    }
+    argc++;
+    token = strtok(NULL, " ");
   }
   
-  /* if ((cm_mode = strtol(mode, 0, 8)) == 0) { */
-  /*   perror("-Ash: cm"); */
-  /*   return -1; */
-  /* } */
-  
-  if (chmod(path, cm_mode) == -1) {
-    perror("-Ash: cm");
+  if (argc < 2) {
+    perror("-Ash: cm, too few arguments given");
     return -1;
+  } else if (argc > 2) {
+    perror("-Ash: cm, too much arguments given");
+    return -1;
+  } else {
+    
+    mode = strsep(&mode, " \n");
+    cm_mode = strtol(mode, 0, 8);
+  
+    if (cm_mode < 0) {
+      perror("-Ash: cm, negative mode");
+      return -1;
+    }
+
+    if (chmod(path, cm_mode) == -1) {
+      perror("-Ash: cm");
+      return -1;
+    }
   }
+
+  return 0;
 }
 
 
 
-
-
+/* NOT REVISED */
 // #include <unistd.h>
 #include <fcntl.h>
 #include <pwd.h>
@@ -99,7 +120,7 @@ static int co(const char *path, const char *owner) {
 
   uid = strtol(owner, &endptr, 10);
   
-  if (*endptr != '\0') {         /* Was not pure numeric string */
+  if (*endptr != '\0') {       /* Was not pure numeric string */
     pwd = getpwnam(owner);     /* Try getting UID for username */
     if (pwd == NULL) {
       perror("-Ash: chown, username not found"); // UID for username not found");
@@ -125,31 +146,29 @@ static void surt() {
 }
 
 
+
+
+
+
 ////////////////////////////////////////
 
 
 
 /* Process list */
-typedef struct {
-  pid_t pid;
-  bool active;
-} proc_t;
+/* typedef struct { */
+/*   pid_t pid; */
+/*   bool active; */
+/* } proc_t; */
 
-static proc_t proc_list[MAX_PROC];
+/* static proc_t proc_list[MAX_PROC]; */
+/* static int proc_indx; */
 
-
-static cmd_t init_cmd(void) {
-  cmd_t cmd;
-  cmd.cmd[0] = '\0';
-  cmd.bg = false;
-  return cmd;
-}
 
 
 static void display_prompt(void) {
   char cwd[MAX_PATH];
   if (getcwd(cwd, MAX_PATH) == NULL) {
-    fprintf(stdout, "%% %s> ", getenv("PWD")); /* Supossing "PWD" is available */
+    fprintf(stdout, "%% %s> ", getenv("PWD"));
   } else {
     fprintf(stdout, "%% %s> ", cwd); 
   }
@@ -161,56 +180,55 @@ static void display_prompt(void) {
 int main(void) {
 
   char *read_in = NULL;
-  
-  // char cmd[MAX_CMD_LEN];
-  cmd_t cmd = init_cmd();
-  char args[MAX_ARGS][MAX_CMD_LEN];
-
+  char *tmp_read_in = NULL;
+  char *cmd = NULL;
+  char *args = NULL;
   
   size_t len = 0;
   ssize_t nread;
-    
-
-
+  
   while (SHOULD_RUN) {
     
     display_prompt();
     
     nread = getline(&read_in, &len, stdin);
-    if (nread > MAX_LINE) {
-      perror("-Ash: Error: Exceeded commnad line length");
+    if (nread == -1) {
+      perror("-Ash: some internal error ocurred");
     } else {
-      read_in[nread] = '\0';
-      printf("%s", read_in);
-
-
-      /*
-       * ic & cd
-       */
-      // ic();
-      // cd(getenv("HOME"));
-      // ic();
-
-      /*
-       * cm
-       */
-      //cm("tst/file2", "0700");
       
-      /*
-       * co
-       */
-      co("tst/fileJH8", "anassanhari");
-      co("tst/file2", "anassanhari");
-      co("tst/file2", "casa");
+      tmp_read_in = read_in;
+      cmd = strsep(&tmp_read_in, " ");
+      cmd = strtok(cmd, "\n");
+      args = tmp_read_in; /* tmp_read_in will only contain the args
+			      part */
+
+      // printf("cmd: '%s'\n", cmd);
+      // printf("args: '%s'\n", args);
+      // printf("args: '%s'\n", strtok(args, " \n"));
       
-      /*
-       * surt
-       */
-      // surt();
-      
-      //parse(read_in, &cmd);
+      if (cmd) {
+	if (strcmp(cmd, "ic") == 0) {
+	  if (args == NULL) {
+	    ic();
+	  } else {
+	    perror("-Ash: ic, does not accept arguments");
+	  }	
+	} else if (strcmp(cmd, "cd") == 0) {
+	  cd(args);
+	} else if (strcmp(cmd, "cm") == 0) {
+	  cm(args);
+	} else if (strcmp(cmd, "co") == 0) {
+	  // co(args);
+	} else if (strcmp(cmd, "surt") == 0) {
+	  surt();
+	} else { /* External command or */
+
+	}	
+      }
+
+      clearerr(stderr);     
     }
   }
-	
+
   return 0;
 }
