@@ -1,0 +1,10 @@
+#ifndef _BUILT-IN_H_
+#define _BUILT-IN_H_
+
+int ic(void);
+int cd(char *path);
+int cm(char *args);
+int co(char *args);
+int surt(void);
+
+#endif /* _BUILT-IN_H_ */
