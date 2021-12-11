@@ -7,7 +7,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "include/defs.h"
+
+// #include <stdio.h>
+// #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+
+#include "../include/defs.h"
+#include "../include/built_in.h"
+
+
+
 
 // #include <limits.h>
 // #include <stdbool.h>
@@ -15,8 +26,8 @@
 
 #define SHOULD_RUN 1
 
-static void surt() {
-}
+/* static void surt() { */
+/* } */
 
 
 
@@ -73,6 +84,21 @@ int main(void) {
       // printf("cmd: '%s'\n", cmd);
       // printf("args: '%s'\n", args);
       // printf("args: '%s'\n", strtok(args, " \n"));
+
+
+      pid_t pid;
+
+      pid = fork();
+      printf("Pid: %d\n", pid);
+
+      if (pid < 0) {
+	
+      }
+
+      
+      
+      fprintf(stdout, "%% %s> ", getenv("PATH"));
+
       
       if (cmd) {
 	if (strcmp(cmd, "ic") == 0) {

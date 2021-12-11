@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pwd.h>
-#include "include/built_in.h"
+#include "../include/built_in.h"
 
 int co(const char *const co_args) {
   char *args = (char *)co_args;

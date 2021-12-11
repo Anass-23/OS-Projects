@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <dirent.h>
-#include "include/built_in.h"
+#include "../include/built_in.h"
 
 int ic(void) { /* Print directory (ls) */
   DIR *DIR_fd;

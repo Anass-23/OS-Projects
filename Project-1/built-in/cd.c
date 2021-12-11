@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "include/built_in.h"
+#include "../include/built_in.h"
 
 /* REVISED */
 int cd(char *path) {

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "include/built_in.h"
+#include "../include/built_in.h"
 
 int cm(const char *const cm_args) {
   char *args = (char *)cm_args;
