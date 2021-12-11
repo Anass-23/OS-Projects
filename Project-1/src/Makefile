@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -std=c99 -Os -fshort-enums
-LDFLAGS = -Wall -std=c99 -Os -fshort-enums
+CFLAGS = -Wall -std=gnu99 -Os -fshort-enums
+LDFLAGS = -Wall -std=gnu99 -Os -fshort-enums
 
 MODULES = parser
 MAIN_MODULES = Ash

@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -std=c99 -Os -fshort-enums
+CFLAGS = -Wall -std=gnu99 -Os -fshort-enums
 
 SRC=$(wildcard *.c)
 OBJS=$(SRC:.c=.o)
