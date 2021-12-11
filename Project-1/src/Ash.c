@@ -143,6 +143,8 @@ int main(void) {
 	    }
 	    else if (pid == 0) { /* child process */
 	      execve(cmd_path, &args, NULL);
+	      perror("-Ash: something went wrong");
+	      exit(EXIT_FAILURE);
 	    }
 	    else { /* parent process */
 	      wait(NULL);
