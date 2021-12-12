@@ -46,7 +46,7 @@ int co(const char *const co_args) {
     if (*endptr != '\0') {       /* Was not pure numeric string */
       pwd = getpwnam(owner);     /* Try getting UID for username */
       if (pwd == NULL) {         /* UID for username not found */
-	perror("-Ash: co, username not found"); 
+	fprintf(stderr, "-Ash: co: %s\n", "Username not found"); 
 	return -1;
       }
 

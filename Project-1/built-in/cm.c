@@ -41,7 +41,7 @@ int cm(const char *const cm_args) {
     cm_mode = strtol(mode, 0, 8);
 
     if (cm_mode < 0) {
-      perror("-Ash: cm, negative mode");
+      fprintf(stderr, "-Ash: cm: %s\n", "Negative mode");
       return -1;
     }
 

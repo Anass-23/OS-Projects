@@ -7,6 +7,6 @@
 #define _DEFS_H_
 
 #define MAX_PATH        1024
-#define MAX_ARGS	40
+#define MAX_ARGS        40
 
 #endif /* _DEFS_H_ */
