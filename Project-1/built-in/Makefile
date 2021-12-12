@@ -7,4 +7,4 @@ OBJS=$(SRC:.c=.o)
 build: $(OBJS)
 
 clean:
-	\rm -f *~ *.o *.s
+	\rm -f *~ *.o *.s *.out

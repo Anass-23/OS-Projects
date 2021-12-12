@@ -2,7 +2,6 @@ CC = gcc
 CFLAGS = -Wall -std=gnu99 -Os -fshort-enums
 LDFLAGS = -Wall -std=gnu99 -Os -fshort-enums
 
-MODULES = parser
 MAIN_MODULES = Ash
 OBJDIR=../obj/build
 
@@ -27,7 +26,7 @@ renew_dependencies:
 
 .PHONY: clean veryclean
 clean:
-	\rm -f *~ *.o *.s
+	\rm -f *~ *.o *.s *.out
 	$(MAKE) -C ../built-in clean
 veryclean: clean
 	\rm -f $(MAIN_MODULES)

@@ -16,13 +16,10 @@
 
 #define SHOULD_RUN 1
 
-/* static pid_t proc_list[MAX_PROC]; */
-/* static int proc_indx = 0; */
-
 /*
  * Static functions
  */
-static char cwd[MAX_PATH];
+static char cwd[MAX_PATH]; /* Current working directory (pwd) */
 static void display_prompt(void) {
   if (getcwd(cwd, MAX_PATH) == NULL) {
     fprintf(stdout, "%% %s> ", getenv("PWD"));
@@ -154,7 +151,7 @@ int main(void) {
 	      exit(EXIT_FAILURE);
 	    } else {
 	      if (!background) {
-		wait(NULL);
+		waitpid(pid, NULL, 0);
 	      }
 	    }
 	  } /* Executing the external command */
