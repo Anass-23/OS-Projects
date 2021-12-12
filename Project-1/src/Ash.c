@@ -7,13 +7,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
-// #include <stdio.h>
-// #include <unistd.h>
+#include <dirent.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <dirent.h>
-
 #include "../include/defs.h"
 #include "../include/built_in.h"
 
@@ -23,8 +20,6 @@
 /* static void surt() { */
 /* } */
 
-
-
 /* Process list */
 /* typedef struct { */
 /*   pid_t pid; */
@@ -32,12 +27,10 @@
 /* } proc_t; */
 
 
+// static pid_t proc_list[MAX_PROC];
+// static int proc_indx;
 
 
-static pid_t proc_list[MAX_PROC];
-static int proc_indx;
-
-#include <signal.h>
 
 
 
@@ -47,17 +40,7 @@ static void handler (int signum) {
   // while ((pid = waitpid(-1, &wstatus, WNOHANG)) > 0);
 
   while ((pid = waitpid(-1, NULL, WNOHANG)) > 0);
-  
-    /* WNOHANG for checking status without blocking */
-    /* for (int proc = 0; proc < MAX_PROC; proc++) { */
-    /*   if (proc_list[proc].pid == pid) { */
-    /* 	proc_list[proc].active = false; */
-    /* 	break; */
-    /*   } */
-    /* } */
 
-    // terminates
-    // kill(pid, SIGKILL);
 }
 
 
@@ -75,8 +58,6 @@ static void handler (int signum) {
 
 /*   return 0; */
 /* } */
-
-
 
 
 
@@ -137,7 +118,6 @@ int main(void) {
   char *read_in = NULL, *tmp_read_in = NULL;
   char *cmd = NULL, *cmd_path = NULL;
   char *args = NULL;
-  
   size_t len = 0;
   ssize_t nread;
 
@@ -178,8 +158,8 @@ int main(void) {
       	  surt();
       	} else { /* External command */
 
-	  // signal(SIGCHLD, SIG_IGN); /* No zoombie process, deleted from PCB */
-	  signal(SIGCHLD, handler);
+	  // signal(SIGCHLD, SIG_IGN); 
+	  signal(SIGCHLD, handler); /* No zoombie process, deleted from PCB */
 	  
 	  /* Parsing cmd and args */
 	  // char *argv[] = {"/bin/mvv", "hola2", "hola22", NULL};
@@ -232,7 +212,6 @@ int main(void) {
 	    } else {
 	      
 	      if (!background) {
-		// wait(NULL);
 		wait(NULL);
 		// waitpid(pid, NULL, -1);
 	      } else {
@@ -252,31 +231,3 @@ int main(void) {
 
   return 0;
 }
-
-
-
-	  
-/* for (int j = 0; j < i; j++) { */
-/*   printf("%s\n", argv[j]); */
-/* } */
-
-	  
-/* pid_t pid; */
-	  
-/* /\* fork a child process *\/ */
-/* pid = fork(); */
-/* if (pid < 0) { */
-/*   /\* error occurred *\/ */
-/*   fprintf(stderr, "-Ash: %s: something went wrong\n", cmd); */
-/*   // return 1; */
-/* } */
-/* else if (pid == 0) { /\* child process *\/ */
-/*   // if (args == NULL) */
-/*   // args = ""; */
-/*   execv(cmd_path, argv); */
-/*   perror("-Ash: something went wrong"); */
-/*   exit(EXIT_FAILURE); */
-/* } */
-/* else { /\* parent process *\/ */
-/*   wait(NULL); */
-/* } */
