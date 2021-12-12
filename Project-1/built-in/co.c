@@ -31,8 +31,6 @@ int co(const char *const co_args) {
     argc++;
     token = strtok(NULL, " ");
   }
-
-  printf("%d\n", argc);
   
   if (argc < 2) {
     fprintf(stderr, "-Ash: co: %s\n", "Too few arguments given");
@@ -43,19 +41,13 @@ int co(const char *const co_args) {
   } else {
 
     owner = strsep(&owner, " \n");
-
-    printf("path: '%s'\n", path);
-    printf("owner: '%s'\n", owner);
-    
     uid = strtol(owner, &endptr, 10);
-  
     if (*endptr != '\0') {       /* Was not pure numeric string */
       pwd = getpwnam(owner);     /* Try getting UID for username */
       if (pwd == NULL) {
-	perror("-Ash: chown, username not found"); // UID for username not found");
+	perror("-Ash: chown, username not found"); /* UID for username not found" */
 	return -1;
       }
-
       uid = pwd->pw_uid;
     }
 
@@ -66,43 +58,3 @@ int co(const char *const co_args) {
   }
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-/* #include <unistd.h> */
-/* #include <fcntl.h> */
-/* #include <pwd.h> */
-/* #include <errno.h> */
-
-/* static int co(const char *path, const char *owner) { */
-/*   uid_t uid; */
-/*   struct passwd *pwd; */
-/*   char *endptr; */
-
-/*   uid = strtol(owner, &endptr, 10); */
-  
-/*   if (*endptr != '\0') {         /\* Was not pure numeric string *\/ */
-/*     pwd = getpwnam(owner);     /\* Try getting UID for username *\/ */
-/*     if (pwd == NULL) { */
-/*       perror("-Ash: chown, username not found"); // UID for username not found"); */
-/*       return -1; */
-/*     } */
-
-/*     uid = pwd->pw_uid; */
-/*   } */
-
-/*   if (chown(path, uid, -1) == -1) { */
-/*     perror("-Ash: chown"); */
-/*     return -1; */
-/*   } */
-  
-/*   return 0; */
-/* } */

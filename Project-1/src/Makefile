@@ -10,6 +10,9 @@ OBJDIR=../obj/build
 Ash: ../built-in/cd.o ../built-in/cm.o ../built-in/co.o \
 	../built-in/ic.o ../built-in/surt.o
 
+capabilities:
+	sudo setcap CAP_CHOWN,CAP_KILL+ep ./Ash
+
 # All Modules & Tests
 Ash.o: Ash.c ../include/defs.h ../include/built_in.h
 

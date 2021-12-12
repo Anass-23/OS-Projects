@@ -8,6 +8,5 @@ int cd(char *path);
 int cm(const char *const cm_args);
 int co(const char *const co_args);
 void surt(void);
-// void surt(pid_t proc_list[], int prc_indx);
 
 #endif /* _BUILT_IN_H_ */

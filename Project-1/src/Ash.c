@@ -16,8 +16,8 @@
 
 #define SHOULD_RUN 1
 
-static pid_t proc_list[MAX_PROC];
-static int proc_indx = 0;
+/* static pid_t proc_list[MAX_PROC]; */
+/* static int proc_indx = 0; */
 
 /*
  * Static functions
@@ -32,7 +32,13 @@ static void display_prompt(void) {
 }
 
 static char* find_cmd(char *cmd, char* cwd) {
-  /* DO NOT MODIFY PATH STRING! */
+  /* NOTE: DO NOT MODIFY PATH STRING! 
+     See getenv(3) manual: 
+         << 
+	 The caller must take care not to modify this string, since
+	 that would change the environment of the process
+	 >>.
+  */
   char *PATH = strcat(strcat(cwd, ":"), getenv("PATH"));
   char *token = NULL, *cmd_path = NULL;
   DIR *DIR_fd;
@@ -51,7 +57,6 @@ static char* find_cmd(char *cmd, char* cwd) {
 	    return cmd_path;	    
 	  }
 	}
-		
       }
       closedir(DIR_fd);
     }
@@ -84,11 +89,8 @@ int main(void) {
       cmd = strtok(cmd, "\n");
       args = strtok(tmp_read_in, "\n"); /* tmp_read_in will only
 					   contain the args part */
-  
-      printf("> cmd: '%s'\n", cmd);
-      printf("> args: '%s'\n", args);
-     
-      if (cmd) {
+      
+      if (cmd) { /* Analyze and parse cmd */
       	if (strcmp(cmd, "ic") == 0) {
       	  if (args == NULL) {
       	    ic();
@@ -133,16 +135,11 @@ int main(void) {
 	      argv[argc-1] = strtok(argv[argc-1], "&");
 	    }
 	  }
-
-	  /* if (proc_indx == MAX_PROC && background) { */
-	  /*   fprintf(stderr, "-Ash: Process limit reached, use clear to kill all the background processes\n"); */
-	  /* } else { */
 		    
 	  /* Searching external command */
 	  if ((cmd_path = find_cmd(cmd, cwd)) == NULL) {
 	    fprintf(stderr, "-Ash: %s: command not found\n", cmd);
-	  } else {
-	    /* Executing the external command */
+	  } else { /* Executing the external command */
 	    argv[0] = cmd_path;
 	    
 	    pid_t pid;
@@ -157,17 +154,12 @@ int main(void) {
 	      exit(EXIT_FAILURE);
 	    } else {
 	      if (!background) {
-		wait(NULL); // waitpid(pid, NULL, -1);
-	      } else {
-		proc_list[proc_indx++] = pid;
+		wait(NULL);
 	      }
 	    }
-	  }
-	    //  }
+	  } /* Executing the external command */
       	} /* External command */
-      }
-
-      clearerr(stderr);     
+      } /* Analyze and parse cmd */   
     }
   }
 
