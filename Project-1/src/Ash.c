@@ -14,53 +14,14 @@
 #include "../include/defs.h"
 #include "../include/built_in.h"
 
-
 #define SHOULD_RUN 1
 
-/* static void surt() { */
-/* } */
+static pid_t proc_list[MAX_PROC];
+static int proc_indx = 0;
 
-/* Process list */
-/* typedef struct { */
-/*   pid_t pid; */
-/*   bool active; */
-/* } proc_t; */
-
-
-// static pid_t proc_list[MAX_PROC];
-// static int proc_indx;
-
-
-
-
-
-static void handler (int signum) {
-  pid_t pid;
-  // int wstatus;
-  // while ((pid = waitpid(-1, &wstatus, WNOHANG)) > 0);
-
-  while ((pid = waitpid(-1, NULL, WNOHANG)) > 0);
-
-}
-
-
-// static struct sigaction act = { 0 };
-
-/* static int init_sigaction(void) { */
-/*   act.sa_flags = SA_RESTART; */
-/*   act.sa_handler = &handler; */
-/*   // sigemptyset(&sa.sa_mask); */
-/*   if (sigaction(SIGCHLD, &act, NULL) == -1) { */
-/*     /\* SIGNAL when a child process terminates *\/ */
-/*     perror("-Ash: sigaction"); */
-/*     return -1; */
-/*   } */
-
-/*   return 0; */
-/* } */
-
-
-
+/*
+ * Static functions
+ */
 static char cwd[MAX_PATH];
 static void display_prompt(void) {
   if (getcwd(cwd, MAX_PATH) == NULL) {
@@ -69,9 +30,6 @@ static void display_prompt(void) {
     fprintf(stdout, "%% %s> ", cwd); 
   }
 }
-
-
-
 
 static char* find_cmd(char *cmd, char* cwd) {
   /* DO NOT MODIFY PATH STRING! */
@@ -89,9 +47,6 @@ static char* find_cmd(char *cmd, char* cwd) {
       while ((DIR_entry = readdir(DIR_fd)) != NULL) {	
 	if (DIR_entry->d_type == DT_REG) {		  
 	  if (strcmp(DIR_entry->d_name, cmd) == 0) {
-	    // trobat
-	    // fprintf(stdout, "%s\n", DIR_entry->d_name);
-	    // fprintf(stdout, "%s\n", token);
 	    cmd_path = strcat(strcat(token, "/"), cmd);
 	    return cmd_path;	    
 	  }
@@ -102,26 +57,18 @@ static char* find_cmd(char *cmd, char* cwd) {
     }
     token = strtok(NULL, ":");
   }
-
   return NULL;
 }
-
-
-
-
 
 /*
  * Main Ash shell
  */
 int main(void) {
-
   char *read_in = NULL, *tmp_read_in = NULL;
   char *cmd = NULL, *cmd_path = NULL;
   char *args = NULL;
   size_t len = 0;
   ssize_t nread;
-
-  // init_sigaction();
   
   while (SHOULD_RUN) {
     
@@ -137,7 +84,7 @@ int main(void) {
       cmd = strtok(cmd, "\n");
       args = strtok(tmp_read_in, "\n"); /* tmp_read_in will only
 					   contain the args part */
-      
+  
       printf("> cmd: '%s'\n", cmd);
       printf("> args: '%s'\n", args);
      
@@ -156,28 +103,24 @@ int main(void) {
       	  co(args);
       	} else if (strcmp(cmd, "surt") == 0) {
       	  surt();
-      	} else { /* External command */
-
-	  // signal(SIGCHLD, SIG_IGN); 
-	  signal(SIGCHLD, handler); /* No zoombie process, deleted from PCB */
+	  break;
+	} else { /* External command */
 	  
-	  /* Parsing cmd and args */
-	  // char *argv[] = {"/bin/mvv", "hola2", "hola22", NULL};
 	  int argc = 1;
 	  char *argv[MAX_ARGS];
-	  char *token = NULL;
-	  bool background = false;
-
+	  char *token;
+	  bool background;
+	  
+	  token = NULL; background = false;
+	  
 	  if (args == NULL) {
 	    if (strchr(cmd, '&') != NULL) {
 	      background = true;
 	      cmd = strtok(cmd, "&");
 	    }
-	    // argv[0] = cmd;
 	    argv[1] = NULL;
 	  }
 	  else {
-	    // argv[0] = cmd;
 	    token = strtok(args, " ");
 	    while (token != NULL) {
 	      argv[argc++] = token;
@@ -189,9 +132,12 @@ int main(void) {
 	      background = true;
 	      argv[argc-1] = strtok(argv[argc-1], "&");
 	    }
-  
 	  }
 
+	  /* if (proc_indx == MAX_PROC && background) { */
+	  /*   fprintf(stderr, "-Ash: Process limit reached, use clear to kill all the background processes\n"); */
+	  /* } else { */
+		    
 	  /* Searching external command */
 	  if ((cmd_path = find_cmd(cmd, cwd)) == NULL) {
 	    fprintf(stderr, "-Ash: %s: command not found\n", cmd);
@@ -210,18 +156,14 @@ int main(void) {
 	      perror("");
 	      exit(EXIT_FAILURE);
 	    } else {
-	      
 	      if (!background) {
-		wait(NULL);
-		// waitpid(pid, NULL, -1);
+		wait(NULL); // waitpid(pid, NULL, -1);
 	      } else {
-		waitpid(pid, NULL, WNOHANG);
+		proc_list[proc_indx++] = pid;
 	      }
-
-	      
 	    }
 	  }
- 
+	    //  }
       	} /* External command */
       }
 
