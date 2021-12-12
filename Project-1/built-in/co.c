@@ -53,9 +53,11 @@ int co(const char *const co_args) {
       uid = pwd->pw_uid;
     }
 
-    if (chown(path, uid, -1) == -1) {
-      perror("-Ash: co");
-      return -1;
+    if (path) {
+      if (chown(path, uid, -1) == -1) {
+	perror("-Ash: co");
+	return -1;
+      }
     }
   }
   return 0;
