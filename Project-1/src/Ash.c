@@ -93,7 +93,7 @@ int main(void) {
       	  if (args == NULL) {
       	    ic();
       	  } else {
-      	    perror("-Ash: ic, does not accept arguments");
+      	    fprintf(stderr, "-Ash: ic: %s\n", "Does not accept arguments");
       	  }
       	} else if (strcmp(cmd, "cd") == 0) {
       	  cd(args);
@@ -144,7 +144,7 @@ int main(void) {
 	    pid = fork();
 
 	    if (pid < 0) {
-	      fprintf(stderr, "-Ash: %s: error", cmd);
+	      fprintf(stderr, "-Ash: %s: Some error ocurred", cmd);
 	    } else if (pid == 0) {
 	      execv(argv[0], argv);
 	      fprintf(stderr, "-Ash: %s: ", cmd);
