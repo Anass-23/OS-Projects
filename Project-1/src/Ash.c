@@ -41,23 +41,24 @@ static int proc_indx;
 
 
 
-/* static void handler (int signum) { */
-/*   pid_t pid; */
-/*   int wstatus; */
+static void handler (int signum) {
+  pid_t pid;
+  // int wstatus;
+  // while ((pid = waitpid(-1, &wstatus, WNOHANG)) > 0);
 
-/*   while ((pid = waitpid(-1, &wstatus, WNOHANG)) > 0); */
-/*     /\* WNOHANG for checking status without blocking *\/ */
-/*     /\* for (int proc = 0; proc < MAX_PROC; proc++) { *\/ */
-/*     /\*   if (proc_list[proc].pid == pid) { *\/ */
-/*     /\* 	proc_list[proc].active = false; *\/ */
-/*     /\* 	break; *\/ */
-/*     /\*   } *\/ */
-/*     /\* } *\/ */
+  while ((pid = waitpid(-1, NULL, WNOHANG)) > 0);
+  
+    /* WNOHANG for checking status without blocking */
+    /* for (int proc = 0; proc < MAX_PROC; proc++) { */
+    /*   if (proc_list[proc].pid == pid) { */
+    /* 	proc_list[proc].active = false; */
+    /* 	break; */
+    /*   } */
+    /* } */
 
-/*     // terminates */
-/*     kill(pid, SIGKILL); */
-/*   } */
-/* } */
+    // terminates
+    // kill(pid, SIGKILL);
+}
 
 
 // static struct sigaction act = { 0 };
@@ -177,9 +178,9 @@ int main(void) {
       	  surt();
       	} else { /* External command */
 
-	  signal(SIGCHLD, SIG_IGN); /* No zoombie process, deleted
-				       from PCB */
-
+	  // signal(SIGCHLD, SIG_IGN); /* No zoombie process, deleted from PCB */
+	  signal(SIGCHLD, handler);
+	  
 	  /* Parsing cmd and args */
 	  // char *argv[] = {"/bin/mvv", "hola2", "hola22", NULL};
 	  int argc = 1;
