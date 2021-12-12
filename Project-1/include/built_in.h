@@ -23,23 +23,27 @@ int ic(void);
 int cd(char *path);
 
 /** @brief Changes the file permissions to the mode bits. The file and
- *         mode bits are located on cm_args. It return returns -1 on
- *         error and 0 on success. 
+ *         mode bits are located on cm_args. It returns -1 on error
+ *         and 0 on success. 
  *  @param cm_args[char*]: Arguments string char pointer.
  *  @return int
  */
 int cm(const char *const cm_args);
 
 /** @brief Changes the file owner to username. The file and
- *         username are located on co_args. It return returns -1 on
- *         error and 0 on success.
+ *         username are located on co_args. It returns -1 on error and
+ *         0 on success. 
  *  @param cm_args[char*]: Arguments string char pointer.
  *  @return int
  */
 int co(const char *const co_args);
 
 /** @brief Exits the shell, in other words, it only kills all the
- *         background processes (no alive processes are left). 
+ *         background processes (no alive processes are
+ *         left)
+ * 
+ *         NOTE: Afterwards, from main Ash parent process we should
+ *         finish the execution!.
  *  @return void
  */
 void surt(void);
