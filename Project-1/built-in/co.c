@@ -40,19 +40,21 @@ int co(const char *const co_args) {
     return -1;
   } else {
 
-    owner = strsep(&owner, " \n");
+    owner = strsep(&owner, " \n");    
     uid = strtol(owner, &endptr, 10);
+  
     if (*endptr != '\0') {       /* Was not pure numeric string */
       pwd = getpwnam(owner);     /* Try getting UID for username */
-      if (pwd == NULL) {
-	perror("-Ash: chown, username not found"); /* UID for username not found" */
+      if (pwd == NULL) {         /* UID for username not found */
+	perror("-Ash: co, username not found"); 
 	return -1;
       }
+
       uid = pwd->pw_uid;
     }
 
     if (chown(path, uid, -1) == -1) {
-      perror("-Ash: chown");
+      perror("-Ash: co");
       return -1;
     }
   }
