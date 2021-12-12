@@ -31,8 +31,52 @@
 /*   bool active; */
 /* } proc_t; */
 
-/* static proc_t proc_list[MAX_PROC]; */
-/* static int proc_indx; */
+
+
+
+static pid_t proc_list[MAX_PROC];
+static int proc_indx;
+
+#include <signal.h>
+
+
+
+/* static void handler (int signum) { */
+/*   pid_t pid; */
+/*   int wstatus; */
+
+/*   while ((pid = waitpid(-1, &wstatus, WNOHANG)) > 0); */
+/*     /\* WNOHANG for checking status without blocking *\/ */
+/*     /\* for (int proc = 0; proc < MAX_PROC; proc++) { *\/ */
+/*     /\*   if (proc_list[proc].pid == pid) { *\/ */
+/*     /\* 	proc_list[proc].active = false; *\/ */
+/*     /\* 	break; *\/ */
+/*     /\*   } *\/ */
+/*     /\* } *\/ */
+
+/*     // terminates */
+/*     kill(pid, SIGKILL); */
+/*   } */
+/* } */
+
+
+// static struct sigaction act = { 0 };
+
+/* static int init_sigaction(void) { */
+/*   act.sa_flags = SA_RESTART; */
+/*   act.sa_handler = &handler; */
+/*   // sigemptyset(&sa.sa_mask); */
+/*   if (sigaction(SIGCHLD, &act, NULL) == -1) { */
+/*     /\* SIGNAL when a child process terminates *\/ */
+/*     perror("-Ash: sigaction"); */
+/*     return -1; */
+/*   } */
+
+/*   return 0; */
+/* } */
+
+
+
 
 
 static char cwd[MAX_PATH];
@@ -43,6 +87,7 @@ static void display_prompt(void) {
     fprintf(stdout, "%% %s> ", cwd); 
   }
 }
+
 
 
 
@@ -80,6 +125,9 @@ static char* find_cmd(char *cmd, char* cwd) {
 }
 
 
+
+
+
 /*
  * Main Ash shell
  */
@@ -91,6 +139,8 @@ int main(void) {
   
   size_t len = 0;
   ssize_t nread;
+
+  // init_sigaction();
   
   while (SHOULD_RUN) {
     
@@ -104,9 +154,9 @@ int main(void) {
       tmp_read_in = read_in;
       cmd = strsep(&tmp_read_in, " ");
       cmd = strtok(cmd, "\n");
-      /* tmp_read_in will only contain the args part */
-      args = strtok(tmp_read_in, " \n");
-
+      args = strtok(tmp_read_in, "\n"); /* tmp_read_in will only
+					   contain the args part */
+      
       printf("> cmd: '%s'\n", cmd);
       printf("> args: '%s'\n", args);
      
@@ -125,33 +175,74 @@ int main(void) {
       	  co(args);
       	} else if (strcmp(cmd, "surt") == 0) {
       	  surt();
-      	} else { /* External command or */
+      	} else { /* External command */
 
+	  signal(SIGCHLD, SIG_IGN); /* No zoombie process, deleted
+				       from PCB */
+
+	  /* Parsing cmd and args */
+	  // char *argv[] = {"/bin/mvv", "hola2", "hola22", NULL};
+	  int argc = 1;
+	  char *argv[MAX_ARGS];
+	  char *token = NULL;
+	  bool background = false;
+
+	  if (args == NULL) {
+	    if (strchr(cmd, '&') != NULL) {
+	      background = true;
+	      cmd = strtok(cmd, "&");
+	    }
+	    // argv[0] = cmd;
+	    argv[1] = NULL;
+	  }
+	  else {
+	    // argv[0] = cmd;
+	    token = strtok(args, " ");
+	    while (token != NULL) {
+	      argv[argc++] = token;
+	      token = strtok(NULL, " ");
+	    }
+	    argv[argc] = NULL;
+
+	    if (strchr(argv[argc-1], '&') != NULL) {
+	      background = true;
+	      argv[argc-1] = strtok(argv[argc-1], "&");
+	    }
+  
+	  }
+
+	  /* Searching external command */
 	  if ((cmd_path = find_cmd(cmd, cwd)) == NULL) {
 	    fprintf(stderr, "-Ash: %s: command not found\n", cmd);
 	  } else {
-	    printf("%s\n", find_cmd(cmd, cwd));
+	    /* Executing the external command */
+	    argv[0] = cmd_path;
 	    
 	    pid_t pid;
-	  
-	    /* fork a child process */
 	    pid = fork();
+
 	    if (pid < 0) {
-	      /* error occurred */
-	      fprintf(stderr, "-Ash: %s: something went wrong\n", cmd);
-	      // return 1;
-	    }
-	    else if (pid == 0) { /* child process */
-	      execve(cmd_path, &args, NULL);
-	      perror("-Ash: something went wrong");
+	      fprintf(stderr, "-Ash: %s: error", cmd);
+	    } else if (pid == 0) {
+	      execv(argv[0], argv);
+	      fprintf(stderr, "-Ash: %s: ", cmd);
+	      perror("");
 	      exit(EXIT_FAILURE);
+	    } else {
+	      
+	      if (!background) {
+		// wait(NULL);
+		wait(NULL);
+		// waitpid(pid, NULL, -1);
+	      } else {
+		waitpid(pid, NULL, WNOHANG);
+	      }
+
+	      
 	    }
-	    else { /* parent process */
-	      wait(NULL);
-	    }
-	    
 	  }
-      	}
+ 
+      	} /* External command */
       }
 
       clearerr(stderr);     
@@ -160,3 +251,31 @@ int main(void) {
 
   return 0;
 }
+
+
+
+	  
+/* for (int j = 0; j < i; j++) { */
+/*   printf("%s\n", argv[j]); */
+/* } */
+
+	  
+/* pid_t pid; */
+	  
+/* /\* fork a child process *\/ */
+/* pid = fork(); */
+/* if (pid < 0) { */
+/*   /\* error occurred *\/ */
+/*   fprintf(stderr, "-Ash: %s: something went wrong\n", cmd); */
+/*   // return 1; */
+/* } */
+/* else if (pid == 0) { /\* child process *\/ */
+/*   // if (args == NULL) */
+/*   // args = ""; */
+/*   execv(cmd_path, argv); */
+/*   perror("-Ash: something went wrong"); */
+/*   exit(EXIT_FAILURE); */
+/* } */
+/* else { /\* parent process *\/ */
+/*   wait(NULL); */
+/* } */
