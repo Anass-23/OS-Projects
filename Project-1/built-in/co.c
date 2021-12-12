@@ -12,7 +12,7 @@
 
 int co(const char *const co_args) {
   char *args = (char *)co_args;
-  char *path, *owner, *token;
+  char *path = NULL, *owner, *token;
   int argc = 0;
 
   uid_t uid;
@@ -53,11 +53,9 @@ int co(const char *const co_args) {
       uid = pwd->pw_uid;
     }
 
-    if (path) {
-      if (chown(path, uid, -1) == -1) {
-	perror("-Ash: co");
-	return -1;
-      }
+    if (chown(path, uid, -1) == -1) {
+      perror("-Ash: co");
+      return -1;
     }
   }
   return 0;
