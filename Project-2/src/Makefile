@@ -6,7 +6,7 @@ MAIN_MODULES = perudo
 TESTS = tst_dice
 
 # Linking
-perudo: perudo.o dice.o bet.o dudo.o # -lpthread -lm
+perudo: perudo.o dice.o bet.o dudo.o -lpthread -lm
 
 # Modules
 perudo.o: perudo.c dice.h bet.h dudo.h
